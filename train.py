@@ -1,8 +1,7 @@
+from unsloth import FastLanguageModel
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
 from peft import get_peft_model, LoraConfig, TaskType
 from datasets import load_dataset
-
-from unsloth import FastLanguageModel
 
 model, tokenizer = FastLanguageModel.from_pretrained(
   model_name="unsloth/Qwen3-14B",
@@ -15,6 +14,26 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 model = model.add_peft_adapter(
   r=8, alpha=32, target_modules=["q_proj","v_proj","k_proj","o_proj"]
 )
+
+training_args = TrainingArguments(
+  output_dir="qwen3-lora",
+  per_device_train_batch_size=2,
+  gradient_accumulation_steps=4,
+  learning_rate=2e-4,
+  num_train_epochs=3,
+  fp16=True,
+  logging_steps=10,
+  save_total_limit=2
+)
+
+trainer = Trainer(
+  model=model,
+  args=training_args,
+  train_dataset=tokenized_dataset["train"],
+  tokenizer=tokenizer
+)
+
+trainer.train()
 
 
 
