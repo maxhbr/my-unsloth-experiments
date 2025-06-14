@@ -9,24 +9,29 @@
     devShells.x86_64-linux.default = let
       pkgs = import nixpkgs { 
         system = "x86_64-linux";
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+          cudaSupport = true;
+        };
       };
       python = pkgs.python312;
       pythonPackages = python.pkgs;
       in pkgs.mkShell {
       buildInputs = [
         pkgs.cudaPackages.cudatoolkit
-        pythonPackages.unsloth
-        pythonPackages.unsloth-zoo
-        pythonPackages.torch
-        pythonPackages.torchvision
-        pythonPackages.torchaudio
-        pythonPackages.transformers
-        pythonPackages.datasets
-        pythonPackages.peft
-        pythonPackages.bitsandbytes
-        pythonPackages.accelerate
-      ];
+      ] ++ (with pythonPackages; [
+        pytorch-bin
+        unsloth
+        unsloth-zoo
+        torch
+        # pythonPackages.torchvision
+        # pythonPackages.torchaudio
+        transformers
+        datasets
+        peft
+        bitsandbytes
+        accelerate
+      ]);
     };
   };
 }
